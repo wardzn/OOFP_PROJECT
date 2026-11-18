@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import pytest
-from models import Habit, PredefinedHabit, CustomHabit
+from main import Habit, PredefinedHabit, CustomHabit
 
 # Testing by setting up a fake "scenario" and then testing if the code works with it.
 
@@ -18,17 +18,33 @@ def test_habit_creation():
 def test_streak_begins_after_three_check_streaks():
     habit = Habit("Exercise", "Daily workout", "daily")
 
+    # fake day 1
     habit.check_streak()
     assert habit.current_streak == 0
 
+    # fake the last check-off to be 2 days ago, so today is a "new day"
+    habit.last_completed_date = datetime.now() - timedelta(days=2)
+
+    # fake day 2
     habit.check_streak()
     assert habit.current_streak == 0
 
+    # fake the last check-off to be 2 days ago again
+    habit.last_completed_date = datetime.now() - timedelta(days=2)
+
+    # fake day 3
     habit.check_streak()
     assert habit.current_streak == 1
 
+    # fake the last check-off to be 2 days ago again
+    habit.last_completed_date = datetime.now() - timedelta(days=2)
+
+    # fake day 4
     habit.check_streak()
     assert habit.current_streak == 2
+
+    # Longest streak should match the current streak
+    assert habit.longest_streak == 2
 
 # Test to see if the DAILY streaks reset after the streak was not checked within the deadline.
 def test_streak_breaks_after_missed_deadline():
@@ -111,8 +127,7 @@ def test_inheritance():
     assert len(p_habit.completed_dates) == 1
 
 
-# All the tests passed
-
+# All the 8 tests passed
 
 
 
