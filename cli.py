@@ -16,13 +16,13 @@ Add confirmation to edit and delete.
 """
 
 def main_menu():
-    # Initialize the DB just in case it's a fresh start
+    # Initialize the DB just in case
     initialize_db()
 
-    # Creates 4 weeks of seeded / pre-populated data
+    # Creates 4 weeks of seeded / pre-populated data on app startup
     seed_database()
 
-    # Using a while loop so the app would not close on the user after doing only 1 activity
+    # A while loop so the app would not close on the user after doing only 1 activity
     while True:
         # Displays the main menu
         choice = questionary.select(
@@ -324,18 +324,15 @@ def show_analytics():
     print("\n")
 
     # prints all habits ordered by periodicity
-    print("\n")
     print("Habits ordered by periodicity:")
     for h in habits:
-        print(f"[{h.periodicity.upper()}] {h.name} ")
-        print("\n")
+        print(f"[{h.periodicity.upper()}] {h.name} ") # Periodicity + name
         print(f"Current streak: {h.current_streak} ")
-        print("\n")
         print(f"Record: {h.longest_streak} ")
+        print("\n")
 
     # shows the current longest currently active streak
     current_best = get_current_longest_streak()
-    print("\n")
     print("Current longest active streak:")
     if current_best:
         print(f"  {current_best.current_streak} with {current_best.name}! ")
@@ -346,7 +343,6 @@ def show_analytics():
     overall_best = get_overall_longest_streak()
     print("\n")
     print("All-time longest streak (record): ")
-    print("\n")
     if overall_best:
         print(f"  {overall_best.longest_streak} with {overall_best.name}!  ")
     else:

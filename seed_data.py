@@ -54,7 +54,7 @@ def seed_database():
                     continue # i
                 if name == "Study" and i in [3, 8, 10, 15, 22, 26, 27, 28]: # 8 days missed in this one
                     continue
-                if name == "Drink Water" and i in [7, 14]: # 2 days missed in this one
+                if name == "Drink Water" and i in [10]: # 1 day missed in this one
                     continue
 
                 # Today - iteration = Num of days ago
@@ -73,22 +73,60 @@ def seed_database():
         # Sort the dates so the dates are no longer backwards
         habit.completed_dates.sort()
 
+        # Simulate
+        consecutive_count = 0  # for check-offs in a row
 
-        if len(habit.completed_dates) >= 3:
-            # Since the streak doesnt start until 3 tries then we will subtract two here to confirm this
-            habit.current_streak = len(habit.completed_dates) - 2
-            # Since meal prep missed the last week so it has to equal to 0
-            if name == "Meal Prep":
+        for fake_date in habit.completed_dates:
+
+            # Check for missed deadlines
+            missed = False
+
+            # If last_completed_date is not empty
+            if habit.last_completed_date is not None:
+
+                # If fake_date is bigger than last_completed date + day/week/month then date is missed
+                if habit.periodicity == "daily":
+                    if fake_date > habit.last_completed_date + timedelta(days=1):
+                        missed = True
+
+                elif habit.periodicity == "weekly":
+                    if fake_date > habit.last_completed_date + timedelta(days=7):
+                        missed = True
+
+                elif habit.periodicity == "monthly":
+                    if fake_date > habit.last_completed_date + timedelta(days=30):
+                        missed = True
+
+            # If missed then restart from 0
+            if missed:
+                consecutive_count = 0
                 habit.current_streak = 0
 
-            # Same as above where the streak only starts at 3 so the longest streak doesnt count
-            habit.longest_streak = len(habit.completed_dates) - 2
+            # Add this check off to the count
+            consecutive_count += 1
 
-        # If the list is not empty
-        if habit.completed_dates:
-            habit.last_completed_date = habit.completed_dates[-1] # The last_completed_date will be the last entry in the list
+            # Since streaks start after the 3rd check off:
+            # Once the concecutive_count >= 3 then start the streak counting
+            if consecutive_count >= 3:
+                habit.current_streak = consecutive_count - 2
+            else:
+                habit.current_streak = 0
 
-        # Finally we save the habits to the database
+            # Update the all time record
+            if habit.current_streak > habit.longest_streak:
+                habit.longest_streak = habit.current_streak
+
+            habit.last_completed_date = fake_date
+
+        # Check if the habit has been broken today by checking if now is bigger than the last checkoff by 1 day for daily etc
+        if habit.last_completed_date is not None:
+            if habit.periodicity == "daily" and now > habit.last_completed_date + timedelta(days=1):
+                habit.current_streak = 0
+            elif habit.periodicity == "weekly" and now > habit.last_completed_date + timedelta(days=7):
+                habit.current_streak = 0
+            elif habit.periodicity == "monthly" and now > habit.last_completed_date + timedelta(days=30):
+                habit.current_streak = 0
+
         save(habit)
 
     print("Prepopulation/Seeding process is complete!")
